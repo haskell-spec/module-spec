@@ -1,0 +1,58 @@
+The module system is part of a larger compiler pipeline which implements the frontend.
+An overview of this pipeline is given in \cref{fig:intro:structure}.
+
+\begin{figure}[h]
+  \begin{center}
+    \tikzstyle{textonly}=[align=center, font=\sffamily]
+    \tikzstyle{box}=[textonly, rectangle, draw=black, minimum width = 2.0cm]
+    \tikzstyle{implemented}=[-{Classical TikZ Rightarrow[length=1.5mm]}, align=center, font=\sffamily]
+    \tikzstyle{label}=[text=gray, align=center, font=\small\sffamily]
+
+    \tikzmath{\distHoriz=2.0;}
+    \tikzmath{\distHorizShort=1.8;}
+    \tikzmath{\distHorizBot=3.0;}
+    \tikzmath{\distVert=1.5;}
+    \tikzmath{\distVertHalf=0.75;}
+
+    \begin{tikzpicture}[scale=0.8, every node/.style={transform shape}]
+      % Top Row
+      \node (inputs) [box]                                        {List Unicode\\\small{\color{gray} Text Input}};
+      \node (lexinput) [box, right = \distHoriz of inputs]            {List (Unicode $\times\ \mathbb{N}$)\\\small{\color{gray}Input to Lexer}};
+      \node (tokens) [box, right = \distHorizShort of lexinput]           {List Token\\\small{\color{gray}Section \ref{subsec:lexer:tokens}}};
+      \node (cst) [box, right = \distHorizShort of tokens]          {CST\\\small{\color{gray}Section \ref{subsec:parser:cst}}};
+      % Bottom Row
+      \node (rst) [box, below = \distVert of inputs]           {RST\\\small{\color{gray}Section X}};
+      \node (rstop) [box, right = \distHorizBot of rst] {RST$_{\text{op}}$\\\small{\color{gray} Section X}};
+      \node (rstbind) [box, right = \distHorizBot of rstop] {RST$_{\text{bind}}$\\\small{\color{gray} Section X}};
+
+      \node[shape=coordinate,below = \distVertHalf of cst] (cornerone) {};
+      \node[shape=coordinate,above = \distVertHalf of rst] (cornertwo) {};
+    
+    
+      % Columnizer
+      \draw[implemented] (inputs) to node (tolexinput) [above]{Columnizer} node [below, label] {Section \ref{sec:columnizer}} (lexinput);
+      % Lexer
+      \draw[implemented] (lexinput) to node (totokens) [above]{Lexer} node [below, label] {Section \ref{sec:lexer}} (tokens);
+      % Parser
+      \draw[implemented] (tokens) to node (tocst) [above]{Parser} node [below, label] {Section \ref{sec:parser}} (cst);
+      % Renamer
+      \draw[implemented] (cst.south) -- (cornerone) -- (cornertwo) node[pos=0.5,above] {Name Resolution} node[pos=0.5, below,label] {Section \ref{sec:module-system}} -- (rst.north);
+      % Fixity
+      \draw[implemented] (rst) to node (torstop) [above]{Fixity Resolution} node [below, label] {Section \ref{sec:operator-fixity}} (rstop);
+      % Binding Groups
+      \draw[implemented] (rstop) to node (torstbind) [above]{Binding Groups} node [below, label] {Section \ref{sec:dependency-order}} (rstbind);
+    \end{tikzpicture}
+  \end{center}
+  \caption{Structure of the frontend.}
+  \Description{Structure of the frontend.}
+  \label{fig:intro:structure}
+\end{figure}
+
+For this project we are only concerned with the name resolution pass which implements the semantics of the module system.
+To give a rough idea about the other elements of this pipeline:
+The columnizer specifies the meaning of tab-stops according to the Haskell report and annotates each character in the input with its indentation level.
+The Lexer specifies regular grammars, the syntax of tokens and gives a formal specification of the maximum munch rule following \citet{Egolf2021verbatim}.
+The parser parses indentation sensitive syntax following \citet{Adams2013parsing} and \citet{Adams2014parsec}.
+Fixity resolution does the proper disambiguation of expressions involving operators, for example $a + b * c$ and takes custom infix declarations into account.
+This has to happen after name resolution, due to how the Haskell report specifies it.
+Lastly, mutually recursive bindings groups are computed for bindings and toplevel declarations. This is required for the correct kind and type inference.
