@@ -1,0 +1,175 @@
+\documentclass[review]{jfp-epi}
+\settopmatter{printfolios=true,printccs=true,printacmref=true}
+
+%%
+%% Journal information
+%%
+\acmJournal{PACMPL}
+\acmVolume{1}
+\acmNumber{OOPSLA}
+\acmArticle{1}
+\acmYear{2020}
+\acmMonth{1}
+\acmDOI{}
+\startPage{1}
+
+%%
+%% Copyright information
+%%
+\setcopyright{none}
+
+%%
+%% Bibliography and Citation Style
+%%
+\bibliographystyle{ACM-Reference-Format}
+\citestyle{acmauthoryear}
+
+%%
+%% Imported Packages
+%%
+\usepackage{booktabs}
+\usepackage{subcaption}
+\usepackage{amsmath}
+\usepackage[all,cmtip]{xy}
+\usepackage[nameinlink,noabbrev,capitalise]{cleveref}
+\usepackage{csquotes}
+\usepackage{booktabs}
+\usepackage{microtype}
+\usepackage{stmaryrd}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage{mathtools}
+\usepackage{courier}
+\usepackage{bussproofs}
+\usepackage{tikz}
+\usetikzlibrary{decorations.pathreplacing}
+\usetikzlibrary{positioning}
+\usetikzlibrary{calc}
+\usetikzlibrary{cd}
+\usetikzlibrary{math}
+\usetikzlibrary{arrows}
+\usetikzlibrary{patterns}
+\usepackage{diagbox}
+\usepackage{cmll}
+\usepackage{afterpage}
+\usepackage[normalem]{ulem}
+\usepackage{dashbox}
+\usepackage{mdframed}
+\usepackage[mathscr]{euscript}
+\DeclareMathAlphabet\mathbfscr{U}{eus}{b}{n}
+\usepackage{colortbl}
+\usepackage{anyfontsize}
+\usepackage{listings}
+\usepackage{alltt} % verbatim with colors
+\usepackage{multicol} %for dividing into 2 columns
+\usepackage{scalerel} %resize symbols
+\usepackage{tipa}
+
+%%
+%% Theorem Environments
+%%
+\newtheorem{remark}{Remark}
+\newtheorem{frameddefinition}{Haskell Report}[section]
+\usepackage{mdframed} % Framed amsmath environments
+\surroundwithmdframed{frameddefinition}
+
+%%
+%% Todo notes
+%%
+\setlength{\marginparwidth}{2cm} % This is needed, otherwise the package "todonotes" will generate a warning.
+\usepackage[]{todonotes}
+\newcommand{\davidb}[2][]{\todo[inline,color=red!40,author=DavidB,#1]{#2}}
+
+
+%%
+%% Macros
+%%
+\input{macros/macros.tex}
+
+% Color definitions
+
+\usepackage{xcolor}
+%%
+%% Used for Minted
+%%
+%% \usepackage{noto-mono}
+
+\begin{document}
+
+%%
+%% Title information
+%%
+\title{The Haskell 2010 Module System}
+%\subtitle{}
+
+%%
+%% Keywords
+%%
+\keywords{Haskell, Formal Specification}
+
+%%
+%% CCS Classification
+%%
+
+\begin{CCSXML}
+  <ccs2012>
+  <concept>
+  <concept_id>10003752.10003753.10003754.10003733</concept_id>
+  <concept_desc>Theory of computation~Lambda calculus</concept_desc>
+  <concept_significance>300</concept_significance>
+  </concept>
+  <concept>
+  <concept_id>10003752.10003790.10011740</concept_id>
+  <concept_desc>Theory of computation~Type theory</concept_desc>
+  <concept_significance>300</concept_significance>
+  </concept>
+  </ccs2012>
+\end{CCSXML}
+
+\ccsdesc[300]{Theory of computation~Lambda calculus}
+\ccsdesc[300]{Theory of computation~Type theory}
+
+%%
+%% Author: David Binder
+%%
+\author{David Binder}
+\orcid{0000-0003-1272-0972}
+\email{D.Binder@kent.ac.uk}
+\affiliation{
+  \department{Department of Computer Science}
+  \institution{University of Kent}
+  \city{Canterbury}
+  \country{United Kingdom}
+}
+
+%%
+%% Abstract
+%%
+\begin{abstract}
+  A formal specification of the Haskell 2010 module system.
+\end{abstract}
+
+
+\maketitle
+
+%%
+%% Module System
+%%
+\section{Module System}
+\label{sec:module-system}
+\input{sections/module-system.tex}
+
+
+%%
+%% Related Work
+%%
+\section{Related Work}
+\label{sec:related-work}
+\input{sections/related-work.tex}
+
+%%
+%% Bibliography
+%%
+\bibliography{bibliography/bibliography.bib}
+
+\end{document}

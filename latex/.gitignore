@@ -1,0 +1,14 @@
+*.bbl
+*.blg
+*.synctex.gz
+*.fls
+*.fdb_latexmk
+*.xdv
+*.log
+*.out
+*.pdf
+*.aux
+*.dvi
+*.xcp
+_minted-copresheaf-models
+.DS_Store
