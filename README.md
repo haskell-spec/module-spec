@@ -5,7 +5,8 @@
 ```text
 ├── haskell                 A Haskell implementation of the algorithm of the paper.
 ├── latex                   Section of a larger article on Haskell's frontend.
-└── lean                    The Lean formalization corresponding to the formal rules.
+├── lean                    The Lean formalization corresponding to the formal rules.
+└── sketches                Lean and Haskell code for the Diatchki et al. paper
 ```
 
 ## References

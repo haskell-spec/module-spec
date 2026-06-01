@@ -1,0 +1,10 @@
+name = "haskell-modules"
+version = "0.1.0"
+defaultTargets = ["haskell-modules"]
+
+[[lean_lib]]
+name = "HaskellModules"
+
+[[lean_exe]]
+name = "haskell-modules"
+root = "Main"
