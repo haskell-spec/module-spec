@@ -56,3 +56,7 @@ The parser parses indentation sensitive syntax following \citet{Adams2013parsing
 Fixity resolution does the proper disambiguation of expressions involving operators, for example $a + b * c$ and takes custom infix declarations into account.
 This has to happen after name resolution, due to how the Haskell report specifies it.
 Lastly, mutually recursive bindings groups are computed for bindings and toplevel declarations. This is required for the correct kind and type inference.
+
+\subsection{Syntax Conventions}
+We use S-expressions for every intermediate representation, and when we define some concrete syntax of S-expressions we use $\terminal{terminal}$ for symbols/terminals and $\nonterminal{nonterminal}$ for non-terminal symbols of the grammar.
+Furthermore, we use $\overline{\nonterminal{nonterminal}}$ as a shorthand for $(\nonterminal{nonterminal}_1 \ldots \nonterminal{nonterminal}_n)$ where $n$ can be 0 and the list empty.
