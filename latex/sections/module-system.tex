@@ -1,3 +1,6 @@
+In \cref{subsec:module-system:cst} we present the concrete syntax in its S-expression form.
+In \cref{subsec:module-system-rst} we present the RST, which is the result of renaming the CST.
+
 %%
 %% Subsec: Concrete Syntax Tree
 %%
@@ -61,6 +64,9 @@ In this subsection we define the \emph{concrete syntax tree (CST)} that is the r
 
 \[
 \begin{array}{rcl}
+    \nonterminal{stmt} &\coloneqq & (\terminal{stmt-expr}\ \nonterminal{expr}) \\
+    &\mid & (\terminal{stmt-bind}\ \nonterminal{pattern}\ \nonterminal{expr}) \\
+    &\mid & (\terminal{stmt-let}\ \overline{\nonterminal{decl}}) \\
     \nonterminal{qual} &\coloneq & (\terminal{qual-gen}\ \nonterminal{pattern}\ \nonterminal{expr}) \\
     &\mid & (\terminal{qual-let}\ \overline{\nonterminal{decl}}) \\
     &\mid & (\terminal{qual-guard}\ \nonterminal{expr}) \\
@@ -73,6 +79,10 @@ In this subsection we define the \emph{concrete syntax tree (CST)} that is the r
     &\mid & (\terminal{exp-list}\ \overline{\nonterminal{expr}}) \\
     &\mid & (\terminal{exp-record}\ \nonterminal{q-con-name}\ \ldots) \\
     &\mid & (\terminal{exp-record-update}\ \nonterminal{expr}\ \ldots) \\
+    &\mid & (\terminal{exp-app}\ \nonterminal{expr}\ \nonterminal{expr}) \\
+    &\mid & (\terminal{exp-let}\ \ldots) \\
+    &\mid & (\terminal{exp-lambda}\ \overline{\nonterminal{pattern}}\ \nonterminal{expr}) \\
+    &\mid & (\terminal{exp-do}\ \overline{\nonterminal{stmt}}\ \nonterminal{expr}) \\
 \end{array}
 \]
 %% Subsubsec: Declarations
