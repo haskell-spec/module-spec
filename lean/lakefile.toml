@@ -1,0 +1,10 @@
+name = "module-spec"
+version = "0.1.0"
+defaultTargets = ["module-spec"]
+
+[[lean_lib]]
+name = "ModuleSpec"
+
+[[lean_exe]]
+name = "module-spec"
+root = "Main"
