@@ -10,7 +10,7 @@ import Std.Data.HashMap
 structure Module where
   name : ModName
   imports : ImportList -- TODO
-  exports : ExportList -- TODO
+  exports : Option ExportList
 
 def InscopeRel := Rel QName Entity
 
