@@ -11,6 +11,7 @@ structure Module where
   name : ModName
   imports : ImportList -- TODO
   exports : Option ExportList
+  defines : Unit -- TODO
 
 def InscopeRel := Rel QName Entity
 
