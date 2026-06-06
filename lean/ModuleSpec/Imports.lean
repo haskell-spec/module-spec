@@ -15,3 +15,5 @@ structure Import where
   as : ModName
   hiding_ : Bool
   items : List ImportItem
+
+def ImportList := List Import

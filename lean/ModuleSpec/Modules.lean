@@ -9,7 +9,7 @@ import Std.Data.HashMap
 
 structure Module where
   name : ModName
-  imports : ImportList -- TODO
+  imports : ImportList
   exports : Option ExportList
   defines : Unit -- TODO
 
