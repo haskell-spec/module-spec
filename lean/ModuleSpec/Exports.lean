@@ -2,13 +2,15 @@
 
 import ModuleSpec.Names
 
-inductive SubSpec where
+inductive ExportSubSpec where
   | AllSubs
-  | Subs : List Name → SubSpec
+  | Subs : List Name → ExportSubSpec
 
 inductive EntSpec where
-  | Ent : QName → Option (SubSpec) → EntSpec
+  | Ent : QName → Option (ExportSubSpec) → EntSpec
 
 inductive ExpListEntry where
   | EntExp : EntSpec → ExpListEntry
   | ModuleExp : ModName → ExpListEntry
+
+def ExportList := List ExpListEntry

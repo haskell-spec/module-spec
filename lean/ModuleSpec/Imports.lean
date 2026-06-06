@@ -1,13 +1,12 @@
 import ModuleSpec.Names
-import ModuleSpec.EntSpec
 
-inductive SubSpec where
+inductive ImportSubSpec where
   | AllSubs
   | Subs (l : List Name)
 
 -- EntSpec
 structure ImportItem where
   name : Name
-  sub : Option SubSpec
+  sub : Option ImportSubSpec
 
-def ExportList := List ImportItem
+def ImportList := List ImportItem
