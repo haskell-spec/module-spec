@@ -6,8 +6,8 @@ inductive SubSpec where
   | AllSubs
   | Subs : List Name → SubSpec
 
-inductive EntExp where
-  | Ent : QName → Option (SubSpec) → EntExp
+inductive EntSpec where
+  | Ent : QName → Option (SubSpec) → EntSpec
 
 inductive ExpListEntry where
   | EntExp : EntSpec → ExpListEntry
