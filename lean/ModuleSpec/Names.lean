@@ -1,15 +1,15 @@
 inductive Name where
   | MkName : String → Name
-  deriving Ord, BEq
+  deriving Ord, BEq, Hashable
 
 inductive ModName where
   | ModName : String → ModName
-  deriving Ord, BEq
+  deriving Ord, BEq, Hashable
 
 inductive QName where
   | Qualified : ModName → Name → QName
   | UnQualified : Name → QName
-  deriving Ord, BEq
+  deriving Ord, BEq, Hashable
 
 
 def getQualifier (q : QName) : Option ModName :=
