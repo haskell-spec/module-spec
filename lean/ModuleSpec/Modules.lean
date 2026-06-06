@@ -1,1 +1,1 @@
-/-- The Syntax of Modules -/
+-- Syntax of Modules
