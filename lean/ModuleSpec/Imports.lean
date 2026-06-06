@@ -9,4 +9,9 @@ structure ImportItem where
   name : Name
   sub : Option ImportSubSpec
 
-def ImportList := List ImportItem
+structure Import where
+  qualified : Bool
+  source : ModName
+  as : ModName
+  hiding_ : Bool
+  items : List ImportItem
