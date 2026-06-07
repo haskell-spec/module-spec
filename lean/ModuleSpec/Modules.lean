@@ -100,19 +100,33 @@ inductive ExportItemJ : InscopeRel → ExportItem → ExportRel → Prop where
         entity ∈ owns ownEntity) ∧
       RelEntry.mk subName entity ∈ inscope) →
     exportRel = unionRels [rootExport, subExport] →
+    --------------------------------------------------
     ExportItemJ inscope (ExportItem.All name) exportRel
 
   | Some :
-    ∀ inscope name names,
-    -- TODO
+    ∀ inscope name names rootExport subExport,
+    -- Same structure as above
+    ExportRootJ inscope name rootExport →
+    (∀ expName entity subName,
+      RelEntry.mk expName entity ∈ subExport ↔
+      expName = getQualified subName ∧
+      (∃ ownEntity,
+        ownEntity ∈ rng rootExport ∧
+        entity ∈ owns ownEntity) ∧
+      RelEntry.mk subName entity ∈ inscope ∧
+      expName ∈ names /- Only difference from [All] -/) →
+    exportRel = unionRels [rootExport, subExport] →
     --------------------------------------------------
     ExportItemJ inscope (ExportItem.Some name names) _
 
   | Module :
-    ∀ inscope modname,
-    -- TODO
+    ∀ inscope modname exportRel,
+    (∀ name entity,
+      RelEntry.mk name entity ∈ exportRel ↔
+      RelEntry.mk (QName.Qualified modname name) entity ∈ inscope ∧
+      RelEntry.mk (QName.UnQualified name) entity ∈ inscope) →
     -------------------------------------------------
-    ExportItemJ inscope (ExportItem.Module modname) _
+    ExportItemJ inscope (ExportItem.Module modname) exportRel
 
 /-- Specify the semantics of the export list -/
 inductive ExportsJ : Module → InscopeRel → ExportList → ExportRel → Prop where
