@@ -23,49 +23,75 @@ structure Module where
 /-- A relation describing what is currently in scope. -/
 abbrev InscopeRel := Rel QName Entity
 
+abbrev UnqInscopeRel := Rel Name Entity
+
 /-- A relation describing what a module exports. -/
 abbrev ExportRel := Rel Name Entity
 
-def ExportEnv := Std.HashMap ModName ExportRel
+abbrev ExportEnv := Std.HashMap ModName ExportRel
 
 /-
 Semantic of Imports
 -/
 
 /-- Specify the semantics of a single `ImportItem` -/
-inductive ImportItemJ : ExportEnv → ImportItem → InscopeRel → Prop where
+inductive ImportItemJ : ExportRel → ImportItem → UnqInscopeRel → Prop where
   | Single :
-    ∀ exports name,
-    -- TODO
-    ----------------------------------------------
-    ImportItemJ exports (ImportItem.Single name) _
+    ∀ exportRel name entity inscopeRel,
+    RelEntry.mk name entity ∈ exportRel →
+    inscopeRel = listToRel [RelEntry.mk name entity] →
+    ---------------------------------------------------------------------------
+    ImportItemJ exportRel (ImportItem.Single name) inscopeRel
 
   | All :
-    ∀ exports name,
-    -- TODO
-    -------------------------------------------
-    ImportItemJ exports (ImportItem.All name) _
+    ∀ exportRel name entity subImport inscopeRel,
+    RelEntry.mk name entity ∈ exportRel →
+    (∀ subName subEntity,
+      RelEntry.mk subName subEntity ∈ subImport ↔
+      subEntity ∈ owns entity ∧
+      RelEntry.mk subName subEntity ∈ exportRel) →
+    inscopeRel = listToRel (RelEntry.mk name entity :: subImport) →
+    ---------------------------------------------------------------------------
+    ImportItemJ exportRel (ImportItem.All name) inscopeRel
 
   | Some :
-    ∀ exports name names,
-    -- TODO
-    --------------------------------------------------
-    ImportItemJ exports (ImportItem.Some name names) _
+    ∀ exportRel name names entity subImport inscopeRel,
+    RelEntry.mk name entity ∈ exportRel →
+    (∀ subName subEntity,
+      RelEntry.mk subName subEntity ∈ subImport ↔
+      subEntity ∈ owns entity ∧
+      subName ∈ names ∧
+      RelEntry.mk subName subEntity ∈ exportRel) →
+    inscopeRel = listToRel (RelEntry.mk name entity :: subImport) →
+    ---------------------------------------------------------------------------
+    ImportItemJ exportRel (ImportItem.Some name names) inscopeRel
+
+def toQualifiedInscope (qual : Bool) (asname : ModName) (rel : UnqInscopeRel) : InscopeRel :=
+  if qual
+  then mapDom (mkQual asname) rel
+  else unionRels [mapDom (mkQual asname) rel, mapDom mkUnqual rel]
 
 /-- Specify the semantics of a single import statement -/
 inductive ImportJ : ExportEnv → Import → InscopeRel → Prop where
   | Hiding :
-    ∀ qual modname asname items,
-    -- TODO
-    ------------------------------------------------------------
-    ImportJ exports (Import.mk qual modname asname true items) _
+    ∀ qual modname asname items exportRel hiddenInscopeRels,
+    exports[modname]? = some exportRel →
+    Forall2
+      (λ importItem inscopeRel => ImportItemJ exportRel importItem inscopeRel)
+      items hiddenInscopeRels →
+    inscopeRel = toQualifiedInscope qual asname (minusRel exportRel (unionRels hiddenInscopeRels)) →
+    ---------------------------------------------------------------------------
+    ImportJ exports (Import.mk qual modname asname true items) inscopeRel
 
   | Exposing :
-    ∀ qual modname asname items,
-    -- TODO
-    -------------------------------------------------------------
-    ImportJ exports (Import.mk qual modname asname false items) _
-
+    ∀ qual modname asname items exportRel inscopeRels,
+    exports[modname]? = some exportRel →
+    Forall2
+      (λ importItem inscopeRel => ImportItemJ exportRel importItem inscopeRel)
+      items inscopeRels →
+    inscopeRel = toQualifiedInscope qual asname (unionRels inscopeRels) →
+    ---------------------------------------------------------------------------
+    ImportJ exports (Import.mk qual modname asname false items) inscopeRel
 
 /-
 Semantic of Exports
