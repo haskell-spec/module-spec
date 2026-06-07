@@ -49,6 +49,10 @@ def restrictRng {α β : Type} [Ord α] [Ord β]
   let g (x : RelEntry α β) : Bool := f x.rng
   Std.TreeSet.filter g r
 
+def restrictDomRng {α β: Type} [Ord α][Ord β]
+              (f : α → Bool)(g: β → Bool): Rel α β → Rel α β :=
+  restrictRng g ∘ restrictDom f
+
 def dom {α β : Type} [Ord α][Ord β] (r : Rel α β) : Set α :=
   Std.TreeSet.ofList ((Std.TreeSet.toList r).map (λ x => x.dom))
 
@@ -59,10 +63,13 @@ def mapDom {α β γ : Type} [Ord α][Ord β][Ord γ]
            (f : α → γ)(r : Rel α β) : Rel γ β :=
   listToRel ((relToList r).map (λ ⟨x,y⟩ => ⟨f x, y⟩))
 
-
 def mapRng {α β γ : Type} [Ord α][Ord β][Ord γ]
            (f : β → γ)(r : Rel α β) : Rel α γ :=
   listToRel ((relToList r).map (λ ⟨x,y⟩ => ⟨x, f y⟩))
+
+def mapDomRng {α β γ δ : Type} [Ord α][Ord β][Ord γ][Ord δ]
+              (f : α → γ)(g: β → δ): Rel α β → Rel γ δ :=
+  mapRng g ∘ mapDom f
 
 def intersectRel {α β : Type}[Ord α][Ord β]
                  (r₁ r₂ : Rel α β) : Rel α β :=

@@ -129,7 +129,39 @@ inductive ExportItemJ : InscopeRel → ExportItem → ExportRel → Prop where
     ExportItemJ inscope (ExportItem.Module modname) exportRel
 
 def export_item (inscope : InscopeRel)(exp_item : ExportItem) : ExportRel :=
-  sorry
+  match exp_item with
+  | ExportItem.Single name =>
+      listToRel (List.map (RelEntry.mk (getQualified name)) (applyRel inscope name))
+  | ExportItem.All name =>
+      let nameEntities := applyRel inscope name;
+      let ownedEntities := List.flatMap (Std.TreeSet.toList ∘ owns) nameEntities;
+      mapDom getQualified
+        (unionRels [
+          /- All the root entities -/
+          (restrictDom (.== name) inscope),
+          /- All the owned entities of the root -/
+          (restrictRng (λ entity => List.elem entity ownedEntities) inscope)
+        ])
+  | ExportItem.Some name names =>
+      let nameEntities := applyRel inscope name;
+      let ownedEntities := List.flatMap (Std.TreeSet.toList ∘ owns) nameEntities;
+      mapDom getQualified
+        (unionRels [
+          /- All the root entities -/
+          (restrictDom (.== name) inscope),
+          /- All the owned entities of the root matching the [names] -/
+          (restrictDomRng (λ n => List.elem (getQualified n) names)
+                          (λ entity => List.elem entity ownedEntities)
+                          inscope)
+        ])
+  | ExportItem.Module modName =>
+    /- All the entities qualified by modName -/
+    let qualEntities := restrictDom (λ n => getQualifier n == some modName) inscope;
+    /- All the unqualified names -/
+    let unqualEntities := restrictDom (λ n => getQualifier n == none) inscope;
+    intersectRel
+      (mapDom getQualified qualEntities)
+      (mapDom getQualified unqualEntities)
 
 theorem export_item_correct :
   export_item inscope exp_item = export_rel →

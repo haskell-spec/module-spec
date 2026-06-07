@@ -3,30 +3,30 @@ import ModuleSpec.Relations
 
 structure EntityFun where
   name : String
-  deriving Ord
+  deriving Ord, BEq
 
 structure EntityTmCon where
   name : String
-  deriving Ord
+  deriving Ord, BEq
 
 structure EntityFieldLabel where
   name : String
-  deriving Ord
+  deriving Ord, BEq
 
 structure EntityTyCon where
   name : String
   tmcons : List EntityTmCon
   fieldlabels : List EntityFieldLabel
-  deriving Ord
+  deriving Ord, BEq
 
 structure EntityClassMethod where
   name : String
-  deriving Ord
+  deriving Ord, BEq
 
 structure EntityTyClass where
   name : String
   methods : List EntityClassMethod
-  deriving Ord
+  deriving Ord, BEq
 
 inductive Entity : Type where
     /-- A function -/
@@ -41,7 +41,7 @@ inductive Entity : Type where
   | TyClass : EntityTyClass → Entity
     /-- A typeclass method -/
   | ClassMethod : EntityClassMethod → Entity
-  deriving Ord
+  deriving Ord, BEq
 
 def isCon (e : Entity) : Bool :=
   match e with
