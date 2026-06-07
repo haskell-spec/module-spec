@@ -12,11 +12,11 @@ module A (...)
 -/
 inductive ExportItem where
     /-- An `ExportItem` of the form `f` -/
-  | Single : Name → ExportItem
+  | Single : QName → ExportItem
     /-- An `ExportItem` of the form `f(..)` -/
-  | All : Name → ExportItem
+  | All : QName → ExportItem
     /-- An `ExportItem` of the form `f(f₁,…,fₙ)` -/
-  | Some : Name → List Name → ExportItem
+  | Some : QName → List Name → ExportItem
     /-- An `ExportItem` of the form `module A` -/
   | Module : ModName → ExportItem
 

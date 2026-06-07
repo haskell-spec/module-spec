@@ -24,6 +24,7 @@ instance OrdRelEntry {α β : Type}[Ord α][Ord β] : Ord (RelEntry α β) where
     | Ordering.gt => Ordering.gt
     | Ordering.eq => compare x.rng y.rng
 
+
 abbrev Rel (α β : Type)[Ord α][Ord β] : Type :=
   Std.TreeSet (RelEntry α β)
 

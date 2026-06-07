@@ -20,10 +20,10 @@ structure Module where
 
 
 /-- A relation describing what is currently in scope. -/
-def InscopeRel := Rel QName Entity
+abbrev InscopeRel := Rel QName Entity
 
 /-- A relation describing what a module exports. -/
-def ExportRel := Rel Name Entity
+abbrev ExportRel := Rel Name Entity
 
 def ExportEnv := Std.HashMap ModName ExportRel
 
@@ -70,18 +70,40 @@ inductive ImportJ : ExportEnv → Import → InscopeRel → Prop where
 Semantic of Exports
 -/
 
+def ExportRootJ (inscope : InscopeRel) (name : QName) (exportRel : ExportRel) : Prop :=
+  (∀ expName entity,
+    RelEntry.mk expName entity ∈ exportRel ↔
+    expName = getQualified name ∧
+    not (isCon entity) ∧
+    RelEntry.mk name entity ∈ inscope)
+
 inductive ExportItemJ : InscopeRel → ExportItem → ExportRel → Prop where
   | Single :
-    ∀ inscope name,
+    ∀ inscope name exportRel,
     -- TODO
     ----------------------------------------------
-    ExportItemJ inscope (ExportItem.Single name) _
+    ExportRootJ inscope name exportRel →
+    ExportItemJ inscope (ExportItem.Single name) exportRel
 
   | All :
-    ∀ inscope name,
-    -- TODO
-    -------------------------------------------
-    ExportItemJ inscope (ExportItem.All name) _
+    ∀ inscope name rootExport subExport,
+    -- Export root as above
+    ExportRootJ inscope name rootExport →
+    (∀ expName entity subName,
+      -- Here, entity is something owned by an entity in the
+      -- root export relation. expName refers to the name of
+      -- the sub-entity in the final export relation.
+      RelEntry.mk expName entity ∈ subExport ↔
+      expName = getQualified subName ∧
+      (∃ ownEntity,
+        ownEntity ∈ rng rootExport ∧
+        entity ∈ owns ownEntity) ∧
+      RelEntry.mk subName entity ∈ inscope) →
+    ExportItemJ inscope (ExportItem.All name) (unionRels [rootExport, subExport])
+
+  -- module M (Foo.X(..), Bar.X(..)) where
+  -- ExportItem.All Foo.X
+  -- ExportItem.All Bar.X
 
   | Some :
     ∀ inscope name names,
