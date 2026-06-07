@@ -99,7 +99,8 @@ inductive ExportItemJ : InscopeRel → ExportItem → ExportRel → Prop where
         ownEntity ∈ rng rootExport ∧
         entity ∈ owns ownEntity) ∧
       RelEntry.mk subName entity ∈ inscope) →
-    ExportItemJ inscope (ExportItem.All name) (unionRels [rootExport, subExport])
+    exportRel = unionRels [rootExport, subExport] →
+    ExportItemJ inscope (ExportItem.All name) exportRel
 
   | Some :
     ∀ inscope name names,
