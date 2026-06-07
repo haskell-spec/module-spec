@@ -193,4 +193,31 @@ theorem exports_correct :
   sorry
 
 -- TODO
-def inscope (m : Module) (expsOf : ModName → Rel Name Entity) : InscopeRel := sorry
+def mEntSpec : sorry := sorry
+
+-- TODO find a better name
+def mImp (expsOf : ModName -> Rel Name Entity) (imp : Import): Rel QName Entity :=
+  if Import.qualified imp then
+    qs
+  else
+    sorry
+  where
+    qs := mapDom (mkQual (Import.as imp)) incoming
+    unqs := mapDom mkUnqual incoming
+    listed := unionRels $ List.map (sorry isHiding exps) (Import.items imp)
+    incoming :=
+      if isHiding then
+        minusRel exps listed
+      else
+        listed
+    isHiding := Import.hiding_ imp
+    exps := expsOf (Import.source imp)
+
+def inscope (m : Module) (expsOf : ModName → Rel Name Entity) : InscopeRel :=
+  unionRels [imports, locals]
+  where
+    defEnts := Module.defines m
+    locals := unionRels [ mapDom mkUnqual  defEnts
+                        , mapDom (mkQual (Module.name m)) defEnts
+                        ]
+    imports := unionRels $ List.map (mImp expsOf) (Module.imports m)
