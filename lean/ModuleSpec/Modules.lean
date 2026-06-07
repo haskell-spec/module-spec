@@ -3,6 +3,7 @@ import ModuleSpec.Entity
 import ModuleSpec.Names
 import ModuleSpec.Imports
 import ModuleSpec.Exports
+import ModuleSpec.Utils
 import Std.Data.HashMap
 
 -- Syntax of Modules
@@ -122,10 +123,8 @@ inductive ExportsJ : Module → InscopeRel → ExportList → ExportRel → Prop
 
     /-- If the module provides an explicit export list, then we have to form the union of all exported items.-/
   | Explicit {exports inscope} :
-    ∀ (m : Module),
-    ∀ (exportRels : List ExportRel),
-    List.length exportRels = List.length exports →
-    (∀ exportItem exportRel,
-      (exportItem, exportRel) ∈ List.zip exports exportRels →
-      ExportItemJ inscope exportItem exportRel) →
-    ExportsJ m inscope (ExportList.Explicit exports) (unionRels exportRels)
+    ∀ (m : Module)(exportRels : List ExportRel),
+    Forall2 (λ exp rel => ExportItemJ inscope exp rel) exports exportRels →
+    exportRel = unionRels exportRels →
+    ----------------------------------------------------------
+    ExportsJ m inscope (ExportList.Explicit exports) exportRel

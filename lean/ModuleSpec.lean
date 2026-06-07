@@ -4,3 +4,4 @@ import ModuleSpec.Names
 import ModuleSpec.Modules
 import ModuleSpec.Relations
 import ModuleSpec.Entity
+import ModuleSpec.Utils
