@@ -1,136 +1,228 @@
-In \cref{subsec:module-system:cst} we present the concrete syntax in its S-expression form.
-In \cref{subsec:module-system-rst} we present the RST, which is the result of renaming the CST.
+% In \cref{subsec:module-system:cst} we present the concrete syntax in its S-expression form.
+% In \cref{subsec:module-system-rst} we present the RST, which is the result of renaming the CST.
 
 %%
-%% Subsec: Concrete Syntax Tree
+%% Subsec: Computing the Inscope Relation of a Module
 %%
-\subsection{Concrete Syntax Tree}
-\label{subsec:module-system:cst}
-
-In this subsection we define the \emph{concrete syntax tree (CST)} that is the result of parsing the concrete syntax of Haskell.
-
-%% Subsubsec: Names
-\subsubsection{Names}
+\subsection{Computing the Inscope Relation of a Module}
+\label{subsec:module-system:inscope}
 
 \[
-\begin{array}{rcll}
-    \nonterminal{mod-name} & \coloneqq & (\terminal{mod-name}\ s\ \overline{s}) & \text{Text}, \text{Data.Text}\\
-    \nonterminal{con-name} & \coloneqq & (\terminal{con-name}\ s) & \text{Maybe}, \text{Nothing}\\
-    \nonterminal{q-con-name} & \coloneqq &  (\terminal{q-con-qual}\ \nonterminal{mod-name}\ \nonterminal{con-name}) & \text{Data.Maybe.Nothing}\\
-    & \mid & (\terminal{q-con-unqual}\ \nonterminal{con-name}) & \text{Nothing}\\
-    \nonterminal{var-name} & \coloneqq & (\terminal{var-name}\ s) & \text{isJust}\\
-    \nonterminal{q-var-name} & \coloneqq &  (\terminal{q-var-qual}\ \nonterminal{mod-name}\ \nonterminal{var-name}) & \text{Data.Maybe.isJust} \\
-    & \mid & (\terminal{q-var-unqual}\ \nonterminal{var-name}) & \text{isJust} \\
-    \nonterminal{op-name} & \coloneqq & (\terminal{op-name}\ s) & \text{+} \\
-    \nonterminal{q-op-name} & \coloneqq &  (\terminal{q-op-qual}\ \nonterminal{mod-name}\ \nonterminal{op-name}) & \text{Prelude.(+)} \\
-    & \mid & (\terminal{q-op-unqual}\ \nonterminal{op-name}) & \text{+} \\
-    
-\end{array}
-\]
-%% Subsubsec: Literals
-\subsubsection{Literals}
-
-\[
-\begin{array}{rcl}
-    \nonterminal{literal} &\coloneqq & (\terminal{lit-char}\ c) \\
-    & \mid & (\terminal{lit-string}\ s) \\
-    & \mid & (\terminal{lit-int}\ n) \\
-    & \mid & (\terminal{lit-float}\ n\ n)
-\end{array}
-\]
-%% Subsubsec: Patterns
-\subsubsection{Patterns}
-
-\[
-\begin{array}{rcl}
-    \nonterminal{labelled-pattern} & \coloneqq & (\terminal{label-pat}\ \nonterminal{q-var-name}\ \nonterminal{pattern}) \\
-    \nonterminal{pattern} & \coloneq & (\terminal{pat-lit}\ \nonterminal{literal}) \\
-    & \mid & (\terminal{pat-var}\ \nonterminal{var-name}) \\
-    & \mid & (\terminal{pat-irrefutable}\ \nonterminal{pattern}) \\
-    & \mid & (\terminal{pat-as}\ \nonterminal{var-name}\ \nonterminal{pattern}) \\
-    & \mid & (\terminal{pat-con}\ \nonterminal{q-con-name}\ \overline{\nonterminal{pattern}}) \\
-    & \mid & (\terminal{pat-record}\ \nonterminal{q-con-name}\ \overline{\nonterminal{labelled-pattern}}) \\
-    & \mid & (\terminal{pat-tuple}\ \overline{\nonterminal{pattern}}) \\
-    & \mid & (\terminal{pat-list}\ \overline{\nonterminal{pattern}}) \\
-    & \mid & \terminal{pat-wildcard}
-\end{array}
+  \begin{array}{rcl}
+    \nonterminal{importitem} & \coloneqq & (\terminal{import-single}\ \nonterminal{name}) \\
+    & \mid & (\terminal{import-some}\ \nonterminal{name}\ \overline{\nonterminal{name}}) \\
+    & \mid & (\terminal{import-all}\ \nonterminal{name})
+  \end{array}
 \]
 
+\begin{prooftree}
+    \AxiomC{X}
+    \RightLabel{\textsc{Import-Single}}
+    \UnaryInfC{$\ldots \vdash (\terminal{import-single}\ n) \dashv \ldots$}
+\end{prooftree}
+
+\begin{prooftree}
+    \AxiomC{X}
+    \RightLabel{\textsc{Import-Some}}
+    \UnaryInfC{$\ldots \vdash (\terminal{import-some}\ n\ ns) \dashv \ldots$}
+\end{prooftree}
+
+\begin{prooftree}
+    \AxiomC{X}
+    \RightLabel{\textsc{Import-All}}
+    \UnaryInfC{$\ldots \vdash (\terminal{import-all}\ n) \dashv \ldots$}
+\end{prooftree}
 
 %%
-%% Subsubsec: Expressions
+%% Subsec: Computing the Export Relation of a Module
 %%
-\subsubsection{Expressions}
+\subsection{Computing the Export Relation of a Module}
+\label{subsec:module-system:export}
+
+In this section we are going to describe how to compute the export relation from a module.
 
 \[
-\begin{array}{rcl}
-    \nonterminal{stmt} &\coloneqq & (\terminal{stmt-expr}\ \nonterminal{expr}) \\
-    &\mid & (\terminal{stmt-bind}\ \nonterminal{pattern}\ \nonterminal{expr}) \\
-    &\mid & (\terminal{stmt-let}\ \overline{\nonterminal{decl}}) \\
-    \nonterminal{qual} &\coloneq & (\terminal{qual-gen}\ \nonterminal{pattern}\ \nonterminal{expr}) \\
-    &\mid & (\terminal{qual-let}\ \overline{\nonterminal{decl}}) \\
-    &\mid & (\terminal{qual-guard}\ \nonterminal{expr}) \\
-    \nonterminal{expr} &\coloneqq & (\terminal{exp-lit}\ \nonterminal{literal}) \\
-    &\mid & (\terminal{exp-var}\ \nonterminal{q-var-name}) \\
-    &\mid & (\terminal{exp-list-comp}\ \nonterminal{expr}\ \overline{\nonterminal{qual}}) \\
-    &\mid & (\terminal{exp-case}\ \nonterminal{expr}\ \overline{\nonterminal{alt}}) \\
-    &\mid & (\terminal{exp-if-then-else}\ \nonterminal{expr}\ \nonterminal{expr}\ \nonterminal{expr}) \\
-    &\mid & (\terminal{exp-tuple}\ \overline{\nonterminal{expr}}) \\
-    &\mid & (\terminal{exp-list}\ \overline{\nonterminal{expr}}) \\
-    &\mid & (\terminal{exp-record}\ \nonterminal{q-con-name}\ \ldots) \\
-    &\mid & (\terminal{exp-record-update}\ \nonterminal{expr}\ \ldots) \\
-    &\mid & (\terminal{exp-app}\ \nonterminal{expr}\ \nonterminal{expr}) \\
-    &\mid & (\terminal{exp-let}\ \ldots) \\
-    &\mid & (\terminal{exp-lambda}\ \overline{\nonterminal{pattern}}\ \nonterminal{expr}) \\
-    &\mid & (\terminal{exp-do}\ \overline{\nonterminal{stmt}}\ \nonterminal{expr}) \\
-\end{array}
+  \begin{array}{rcl}
+    \nonterminal{exportitem} & \coloneqq & (\terminal{export-single}\ \nonterminal{qname}) \\
+    & \mid & (\terminal{export-some}\ \nonterminal{qname}\ \overline{\nonterminal{qname}}) \\
+    & \mid & (\terminal{export-all}\ \nonterminal{qname}) \\
+    & \mid & (\terminal{export-module}\ \nonterminal{modname})
+  \end{array}
 \]
-%% Subsubsec: Declarations
-\subsubsection{Declarations}
-\[
-\begin{array}{rcl}
-    \nonterminal{fixity} &\coloneqq & \terminal{infixl} \mid \terminal{infixr} \mid \terminal{infix} \\
-    \nonterminal{local-decl} &\coloneqq & (\terminal{local-decl-fixity}\ \nonterminal{fixity}\ n\ \overline{\nonterminal{...}}) \\
-    & \mid & (\terminal{local-decl-sig}\ \overline{\nonterminal{var-name}}\ \nonterminal{type}) \\
-    & \mid & (\terminal{local-decl-eq}  \ldots) \\
-    \nonterminal{top-decl} & \coloneqq & (\terminal{top-decl-data} \ldots) \\
-    & \mid & (\terminal{top-decl-newtype} \ldots) \\
-    & \mid & (\terminal{top-decl-type} \ldots) \\
-    & \mid & (\terminal{top-decl-default} \ldots) \\
-    & \mid & (\terminal{top-decl-class} \ldots) \\
-    & \mid & (\terminal{top-decl-instance} \ldots) \\
-    & \mid & (\terminal{top-decl-foreign} \ldots) \\
-    & \mid & (\terminal{top-decl-local}\ \nonterminal{local-decl})
-\end{array}
-\]
-%% Subsubsec: Modules
-\subsubsection{Modules}
+
+\begin{prooftree}
+    \AxiomC{X}
+    \RightLabel{\textsc{Export-Single}}
+    \UnaryInfC{$I \vdash (\terminal{export-single}\ n) \dashv E$}
+\end{prooftree}
+
+\begin{prooftree}
+    \AxiomC{X}
+    \RightLabel{\textsc{Export-All}}
+    \UnaryInfC{$\ldots \vdash (\terminal{export-all}\ n) \dashv \ldots$}
+\end{prooftree}
+
+\begin{prooftree}
+    \AxiomC{X}
+    \RightLabel{\textsc{Export-Some}}
+    \UnaryInfC{$\ldots \vdash (\terminal{export-some}\ n\ ns) \dashv \ldots$}
+\end{prooftree}
+
+\begin{prooftree}
+    \AxiomC{X}
+    \RightLabel{\textsc{Export-Module}}
+    \UnaryInfC{$\ldots \vdash (\terminal{export-module}\ m) \dashv \ldots$}
+\end{prooftree}
 
 \[
-\begin{array}{rcl}
-    \nonterminal{export} &\coloneqq & \ldots \\
-    \nonterminal{exports} &\coloneqq & \terminal{none} \mid (\terminal{some}\ \overline{\nonterminal{export}})\\[0.2cm]
-    \nonterminal{import-item} & \coloneq & \ldots \\
-    \nonterminal{hiding} & \coloneqq & \terminal{hiding} \mid \terminal{exposed}\\
-    \nonterminal{qualified} & \coloneqq & \terminal{qualified} \mid \terminal{unqualified}\\
-    \nonterminal{import-as} & \coloneq & \terminal{none} \mid (\terminal{some}\ \nonterminal{modname}) \\
-    \nonterminal{import} & \coloneqq & (\terminal{import}\ \nonterminal{mod-name}\ \nonterminal{hiding}\ \nonterminal{qualified}\ \nonterminal{import-as}\ \overline{\nonterminal{import-item}}) \\[0.2cm]
-    \nonterminal{module} &\coloneqq & (\terminal{module}\ \nonterminal{mod-name}\ \nonterminal{exports}\ \overline{\nonterminal{import}}\ \overline{\nonterminal{top-decl}})
-\end{array}
+  \begin{array}{rcl}
+    \nonterminal{exportlist} & \coloneqq & \terminal{export-implicit} \\
+    & \mid & (\terminal{export-explicit}\ \overline{\nonterminal{export-item}}) \\
+  \end{array}
 \]
 
-%%
-%% Subsec: Renamed Syntax Tree
-%%
-\subsection{Renamed Syntax Tree}
-\label{subsec:module-system:rst}
+\begin{prooftree}
+  \AxiomC{X}
+  \RightLabel{\textsc{Export-Explicit}}
+  \UnaryInfC{$\ldots \vdash (\terminal{export-explicit}\ es) \dashv \ldots$}
+\end{prooftree}
 
-In this subsection we define the \emph{renamed syntax tree (RST)} that is the result of name resolution.
+\begin{prooftree}
+  \AxiomC{X}
+  \RightLabel{\textsc{Export-Implicit}}
+  \UnaryInfC{$\ldots \vdash \terminal{export-implicit} \dashv \ldots$}
+\end{prooftree}
 
-\subsubsection{Modules}
+% %%
+% %% Subsec: Concrete Syntax Tree
+% %%
+% \subsection{Concrete Syntax Tree}
+% \label{subsec:module-system:cst}
 
-\[
-\begin{array}{rcl}
-    \nonterminal{module} &\coloneqq & (\terminal{module}\ \overline{\nonterminal{topdecl}})
-\end{array}
-\]
+% In this subsection we define the \emph{concrete syntax tree (CST)} that is the result of parsing the concrete syntax of Haskell.
+
+% %% Subsubsec: Names
+% \subsubsection{Names}
+
+% \[
+% \begin{array}{rcll}
+%     \nonterminal{mod-name} & \coloneqq & (\terminal{mod-name}\ s\ \overline{s}) & \text{Text}, \text{Data.Text}\\
+%     \nonterminal{con-name} & \coloneqq & (\terminal{con-name}\ s) & \text{Maybe}, \text{Nothing}\\
+%     \nonterminal{q-con-name} & \coloneqq &  (\terminal{q-con-qual}\ \nonterminal{mod-name}\ \nonterminal{con-name}) & \text{Data.Maybe.Nothing}\\
+%     & \mid & (\terminal{q-con-unqual}\ \nonterminal{con-name}) & \text{Nothing}\\
+%     \nonterminal{var-name} & \coloneqq & (\terminal{var-name}\ s) & \text{isJust}\\
+%     \nonterminal{q-var-name} & \coloneqq &  (\terminal{q-var-qual}\ \nonterminal{mod-name}\ \nonterminal{var-name}) & \text{Data.Maybe.isJust} \\
+%     & \mid & (\terminal{q-var-unqual}\ \nonterminal{var-name}) & \text{isJust} \\
+%     \nonterminal{op-name} & \coloneqq & (\terminal{op-name}\ s) & \text{+} \\
+%     \nonterminal{q-op-name} & \coloneqq &  (\terminal{q-op-qual}\ \nonterminal{mod-name}\ \nonterminal{op-name}) & \text{Prelude.(+)} \\
+%     & \mid & (\terminal{q-op-unqual}\ \nonterminal{op-name}) & \text{+} \\
+
+% \end{array}
+% \]
+% %% Subsubsec: Literals
+% \subsubsection{Literals}
+
+% \[
+% \begin{array}{rcl}
+%     \nonterminal{literal} &\coloneqq & (\terminal{lit-char}\ c) \\
+%     & \mid & (\terminal{lit-string}\ s) \\
+%     & \mid & (\terminal{lit-int}\ n) \\
+%     & \mid & (\terminal{lit-float}\ n\ n)
+% \end{array}
+% \]
+% %% Subsubsec: Patterns
+% \subsubsection{Patterns}
+
+% \[
+% \begin{array}{rcl}
+%     \nonterminal{labelled-pattern} & \coloneqq & (\terminal{label-pat}\ \nonterminal{q-var-name}\ \nonterminal{pattern}) \\
+%     \nonterminal{pattern} & \coloneq & (\terminal{pat-lit}\ \nonterminal{literal}) \\
+%     & \mid & (\terminal{pat-var}\ \nonterminal{var-name}) \\
+%     & \mid & (\terminal{pat-irrefutable}\ \nonterminal{pattern}) \\
+%     & \mid & (\terminal{pat-as}\ \nonterminal{var-name}\ \nonterminal{pattern}) \\
+%     & \mid & (\terminal{pat-con}\ \nonterminal{q-con-name}\ \overline{\nonterminal{pattern}}) \\
+%     & \mid & (\terminal{pat-record}\ \nonterminal{q-con-name}\ \overline{\nonterminal{labelled-pattern}}) \\
+%     & \mid & (\terminal{pat-tuple}\ \overline{\nonterminal{pattern}}) \\
+%     & \mid & (\terminal{pat-list}\ \overline{\nonterminal{pattern}}) \\
+%     & \mid & \terminal{pat-wildcard}
+% \end{array}
+% \]
+
+
+% %%
+% %% Subsubsec: Expressions
+% %%
+% \subsubsection{Expressions}
+
+% \[
+% \begin{array}{rcl}
+%     \nonterminal{stmt} &\coloneqq & (\terminal{stmt-expr}\ \nonterminal{expr}) \\
+%     &\mid & (\terminal{stmt-bind}\ \nonterminal{pattern}\ \nonterminal{expr}) \\
+%     &\mid & (\terminal{stmt-let}\ \overline{\nonterminal{decl}}) \\
+%     \nonterminal{qual} &\coloneq & (\terminal{qual-gen}\ \nonterminal{pattern}\ \nonterminal{expr}) \\
+%     &\mid & (\terminal{qual-let}\ \overline{\nonterminal{decl}}) \\
+%     &\mid & (\terminal{qual-guard}\ \nonterminal{expr}) \\
+%     \nonterminal{expr} &\coloneqq & (\terminal{exp-lit}\ \nonterminal{literal}) \\
+%     &\mid & (\terminal{exp-var}\ \nonterminal{q-var-name}) \\
+%     &\mid & (\terminal{exp-list-comp}\ \nonterminal{expr}\ \overline{\nonterminal{qual}}) \\
+%     &\mid & (\terminal{exp-case}\ \nonterminal{expr}\ \overline{\nonterminal{alt}}) \\
+%     &\mid & (\terminal{exp-if-then-else}\ \nonterminal{expr}\ \nonterminal{expr}\ \nonterminal{expr}) \\
+%     &\mid & (\terminal{exp-tuple}\ \overline{\nonterminal{expr}}) \\
+%     &\mid & (\terminal{exp-list}\ \overline{\nonterminal{expr}}) \\
+%     &\mid & (\terminal{exp-record}\ \nonterminal{q-con-name}\ \ldots) \\
+%     &\mid & (\terminal{exp-record-update}\ \nonterminal{expr}\ \ldots) \\
+%     &\mid & (\terminal{exp-app}\ \nonterminal{expr}\ \nonterminal{expr}) \\
+%     &\mid & (\terminal{exp-let}\ \ldots) \\
+%     &\mid & (\terminal{exp-lambda}\ \overline{\nonterminal{pattern}}\ \nonterminal{expr}) \\
+%     &\mid & (\terminal{exp-do}\ \overline{\nonterminal{stmt}}\ \nonterminal{expr}) \\
+% \end{array}
+% \]
+% %% Subsubsec: Declarations
+% \subsubsection{Declarations}
+% \[
+% \begin{array}{rcl}
+%     \nonterminal{fixity} &\coloneqq & \terminal{infixl} \mid \terminal{infixr} \mid \terminal{infix} \\
+%     \nonterminal{local-decl} &\coloneqq & (\terminal{local-decl-fixity}\ \nonterminal{fixity}\ n\ \overline{\nonterminal{...}}) \\
+%     & \mid & (\terminal{local-decl-sig}\ \overline{\nonterminal{var-name}}\ \nonterminal{type}) \\
+%     & \mid & (\terminal{local-decl-eq}  \ldots) \\
+%     \nonterminal{top-decl} & \coloneqq & (\terminal{top-decl-data} \ldots) \\
+%     & \mid & (\terminal{top-decl-newtype} \ldots) \\
+%     & \mid & (\terminal{top-decl-type} \ldots) \\
+%     & \mid & (\terminal{top-decl-default} \ldots) \\
+%     & \mid & (\terminal{top-decl-class} \ldots) \\
+%     & \mid & (\terminal{top-decl-instance} \ldots) \\
+%     & \mid & (\terminal{top-decl-foreign} \ldots) \\
+%     & \mid & (\terminal{top-decl-local}\ \nonterminal{local-decl})
+% \end{array}
+% \]
+% %% Subsubsec: Modules
+% \subsubsection{Modules}
+
+% \[
+% \begin{array}{rcl}
+%     \nonterminal{export} &\coloneqq & \ldots \\
+%     \nonterminal{exports} &\coloneqq & \terminal{none} \mid (\terminal{some}\ \overline{\nonterminal{export}})\\[0.2cm]
+%     \nonterminal{import-item} & \coloneq & \ldots \\
+%     \nonterminal{hiding} & \coloneqq & \terminal{hiding} \mid \terminal{exposed}\\
+%     \nonterminal{qualified} & \coloneqq & \terminal{qualified} \mid \terminal{unqualified}\\
+%     \nonterminal{import-as} & \coloneq & \terminal{none} \mid (\terminal{some}\ \nonterminal{modname}) \\
+%     \nonterminal{import} & \coloneqq & (\terminal{import}\ \nonterminal{mod-name}\ \nonterminal{hiding}\ \nonterminal{qualified}\ \nonterminal{import-as}\ \overline{\nonterminal{import-item}}) \\[0.2cm]
+%     \nonterminal{module} &\coloneqq & (\terminal{module}\ \nonterminal{mod-name}\ \nonterminal{exports}\ \overline{\nonterminal{import}}\ \overline{\nonterminal{top-decl}})
+% \end{array}
+% \]
+
+% %%
+% %% Subsec: Renamed Syntax Tree
+% %%
+% \subsection{Renamed Syntax Tree}
+% \label{subsec:module-system:rst}
+
+% In this subsection we define the \emph{renamed syntax tree (RST)} that is the result of name resolution.
+
+% \subsubsection{Modules}
+
+% \[
+% \begin{array}{rcl}
+%     \nonterminal{module} &\coloneqq & (\terminal{module}\ \overline{\nonterminal{topdecl}})
+% \end{array}
+% \]
