@@ -70,6 +70,7 @@ inductive ImportJ : ExportEnv → Import → InscopeRel → Prop where
 Semantic of Exports
 -/
 
+/-- Export relation for a type/function, without constructors or fields -/
 def ExportRootJ (inscope : InscopeRel) (name : QName) (exportRel : ExportRel) : Prop :=
   (∀ expName entity,
     RelEntry.mk expName entity ∈ exportRel ↔
@@ -80,8 +81,6 @@ def ExportRootJ (inscope : InscopeRel) (name : QName) (exportRel : ExportRel) : 
 inductive ExportItemJ : InscopeRel → ExportItem → ExportRel → Prop where
   | Single :
     ∀ inscope name exportRel,
-    -- TODO
-    ----------------------------------------------
     ExportRootJ inscope name exportRel →
     ExportItemJ inscope (ExportItem.Single name) exportRel
 
@@ -100,10 +99,6 @@ inductive ExportItemJ : InscopeRel → ExportItem → ExportRel → Prop where
         entity ∈ owns ownEntity) ∧
       RelEntry.mk subName entity ∈ inscope) →
     ExportItemJ inscope (ExportItem.All name) (unionRels [rootExport, subExport])
-
-  -- module M (Foo.X(..), Bar.X(..)) where
-  -- ExportItem.All Foo.X
-  -- ExportItem.All Bar.X
 
   | Some :
     ∀ inscope name names,
@@ -127,7 +122,6 @@ inductive ExportsJ : Module → InscopeRel → ExportList → ExportRel → Prop
 
     /-- If the module provides an explicit export list, then we have to form the union of all exported items.-/
   | Explicit {exports inscope} :
-    -- TODO:
     ∀ (m : Module),
     ∀ (exportRels : List ExportRel),
     List.length exportRels = List.length exports →
