@@ -15,7 +15,7 @@ structure Module where
   /-- The list of import statements. -/
   imports : List Import
   /-- The export list -/
-  exports : Option ExportList
+  exports : ExportList
   /-- The local definitions of the module. -/
   defines : Rel Name Entity
 
