@@ -128,6 +128,14 @@ inductive ExportItemJ : InscopeRel → ExportItem → ExportRel → Prop where
     -------------------------------------------------
     ExportItemJ inscope (ExportItem.Module modname) exportRel
 
+def export_item (inscope : InscopeRel)(exp_item : ExportItem) : ExportRel :=
+  sorry
+
+theorem export_item_correct :
+  export_item inscope exp_item = export_rel →
+  ExportItemJ inscope  exp_item export_rel :=
+  sorry
+
 /-- Specify the semantics of the export list -/
 inductive ExportsJ : Module → InscopeRel → ExportList → ExportRel → Prop where
     /-- If the export list is omitted, then we export all entities that the module declares locally. -/
@@ -143,3 +151,11 @@ inductive ExportsJ : Module → InscopeRel → ExportList → ExportRel → Prop
     exportRel = unionRels exportRels →
     ----------------------------------------------------------
     ExportsJ m inscope (ExportList.Explicit exports) exportRel
+
+def exports (mod : Module)(inscope : InscopeRel)(exp_list : ExportList) : ExportRel :=
+  sorry
+
+theorem exports_correct :
+  exports mod inscope exp_list = export_rel →
+  ExportsJ mod inscope exp_list export_rel :=
+  sorry
