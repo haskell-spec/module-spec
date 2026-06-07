@@ -104,6 +104,12 @@ inductive ExportsJ : Module → InscopeRel → ExportList → ExportRel → Prop
     ExportsJ m _ ExportList.Implicit m.defines
 
     /-- If the module provides an explicit export list, then we have to form the union of all exported items.-/
-  | Explicit :
+  | Explicit {exports inscope} :
     -- TODO:
-    ExportsJ _ inscope (ExportList.Explicit exports) _
+    ∀ (m : Module),
+    ∀ (exportRels : List ExportRel),
+    List.length exportRels = List.length exports →
+    (∀ exportItem exportRel,
+      (exportItem, exportRel) ∈ List.zip exports exportRels →
+      ExportItemJ inscope exportItem exportRel) →
+    ExportsJ m inscope (ExportList.Explicit exports) (unionRels exportRels)
