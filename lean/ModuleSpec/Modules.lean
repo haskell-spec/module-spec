@@ -191,3 +191,6 @@ theorem exports_correct :
   exports mod inscope exp_list = export_rel →
   ExportsJ mod inscope exp_list export_rel :=
   sorry
+
+-- TODO
+def inscope (m : Module) (expsOf : ModName → Rel Name Entity) : InscopeRel := sorry
