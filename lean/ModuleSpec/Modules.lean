@@ -12,7 +12,7 @@ structure Module where
   /-- The name of the module. -/
   name : ModName
   /-- The list of import statements. -/
-  imports : ImportList
+  imports : List Import
   /-- The export list -/
   exports : Option ExportList
   /-- The local definitions of the module. -/
@@ -27,11 +27,83 @@ def ExportRel := Rel Name Entity
 
 def ExportEnv := Std.HashMap ModName ExportRel
 
+/-
+Semantic of Imports
+-/
+
+/-- Specify the semantics of a single `ImportItem` -/
+inductive ImportItemJ : ExportEnv → ImportItem → InscopeRel → Prop where
+  | Single :
+    ∀ exports name,
+    -- TODO
+    ----------------------------------------------
+    ImportItemJ exports (ImportItem.Single name) _
+
+  | All :
+    ∀ exports name,
+    -- TODO
+    -------------------------------------------
+    ImportItemJ exports (ImportItem.All name) _
+
+  | Some :
+    ∀ exports name names,
+    -- TODO
+    --------------------------------------------------
+    ImportItemJ exports (ImportItem.Some name names) _
 
 /-- Specify the semantics of a single import statement -/
-inductive ImportJ : ExportEnv → ImportItem → InscopeRel → Prop where
-  -- TODO
+inductive ImportJ : ExportEnv → Import → InscopeRel → Prop where
+  | Hiding :
+    ∀ qual modname asname items,
+    -- TODO
+    ------------------------------------------------------------
+    ImportJ exports (Import.mk qual modname asname true items) _
+
+  | Exposing :
+    ∀ qual modname asname items,
+    -- TODO
+    -------------------------------------------------------------
+    ImportJ exports (Import.mk qual modname asname false items) _
+
+
+/-
+Semantic of Exports
+-/
+
+inductive ExportItemJ : InscopeRel → ExportItem → ExportRel → Prop where
+  | Single :
+    ∀ inscope name,
+    -- TODO
+    ----------------------------------------------
+    ExportItemJ inscope (ExportItem.Single name) _
+
+  | All :
+    ∀ inscope name,
+    -- TODO
+    -------------------------------------------
+    ExportItemJ inscope (ExportItem.All name) _
+
+  | Some :
+    ∀ inscope name names,
+    -- TODO
+    --------------------------------------------------
+    ExportItemJ inscope (ExportItem.Some name names) _
+
+  | Module :
+    ∀ inscope modname,
+    -- TODO
+    -------------------------------------------------
+    ExportItemJ inscope (ExportItem.Module modname) _
 
 /-- Specify the semantics of the export list -/
-inductive ExportsJ : InscopeRel → ExportList → ExportRel → Prop where
-  -- TODO
+inductive ExportsJ : Module → InscopeRel → ExportList → ExportRel → Prop where
+    /-- If the export list is omitted, then we export all entities that the module declares locally. -/
+  | Implicit :
+    ∀ (m : Module),
+    ------------------------------------------
+    ExportsJ m _ ExportList.Implicit m.defines
+
+    /-- If the module provides an explicit export list, then we have to form the union of all exported items.-/
+  | Explicit :
+    -- TODO:
+    ExportsJ _ inscope (ExportList.Explicit exports) _

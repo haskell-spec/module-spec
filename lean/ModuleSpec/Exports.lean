@@ -2,15 +2,24 @@
 
 import ModuleSpec.Names
 
-inductive ExportSubSpec where
-  | AllSubs
-  | Subs : List Name → ExportSubSpec
+/--
+Describes the individual items specified in an export list:
+```text
+module A (...)
+          ^^^
+           \-- ExportItems
+```
+-/
+inductive ExportItem where
+    /-- An `ExportItem` of the form `f` -/
+  | Single : Name → ExportItem
+    /-- An `ExportItem` of the form `f(..)` -/
+  | All : Name → ExportItem
+    /-- An `ExportItem` of the form `f(f₁,…,fₙ)` -/
+  | Some : Name → List Name → ExportItem
+    /-- An `ExportItem` of the form `module A` -/
+  | Module : ModName → ExportItem
 
-inductive EntSpec where
-  | Ent : QName → Option (ExportSubSpec) → EntSpec
-
-inductive ExpListEntry where
-  | EntExp : EntSpec → ExpListEntry
-  | ModuleExp : ModName → ExpListEntry
-
-def ExportList := List ExpListEntry
+inductive ExportList where
+  | Implicit
+  | Explicit : List ExportItem → ExportList
