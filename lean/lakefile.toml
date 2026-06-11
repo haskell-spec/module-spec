@@ -5,6 +5,11 @@ defaultTargets = ["module-spec"]
 [[lean_lib]]
 name = "ModuleSpec"
 
+[[require]]
+name = "mathlib"
+scope = "leanprover-community"
+version = "≥4.30.0"
+
 [[lean_exe]]
 name = "module-spec"
 root = "Main"
