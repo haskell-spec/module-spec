@@ -1,16 +1,17 @@
+import ModuleSpec.Relations
+
 inductive Name where
   | MkName : String → Name
-  deriving Ord, BEq, Hashable
+  deriving Ord, BEq, ReflBEq, LawfulBEq, Hashable, DecidableEq
 
 inductive ModName where
   | ModName : String → ModName
-  deriving Ord, BEq, Hashable
+  deriving Ord, BEq, ReflBEq, LawfulBEq, Hashable, DecidableEq
 
 inductive QName where
   | Qualified : ModName → Name → QName
   | UnQualified : Name → QName
-  deriving Ord, BEq, Hashable
-
+  deriving Ord, BEq, ReflBEq, LawfulBEq, Hashable, DecidableEq
 
 def getQualifier (q : QName) : Option ModName :=
   match q with

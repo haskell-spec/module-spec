@@ -1,10 +1,9 @@
-import Std.Data.TreeSet
-
-abbrev Set (α : Type)[Ord α] := Std.TreeSet α
-
-def SetMap {α β : Type}[Ord α][Ord β]
-           (f : α → β)(s : Set α) : Set β :=
-           Std.TreeSet.ofList ((Std.TreeSet.toList s).map f)
+import Mathlib.Data.Rel
+import Mathlib.Data.Finite.Set
+import Mathlib.Data.Finset.Sort
+import Mathlib.Data.PFun
+import Mathlib.Data.Prod.Lex
+import Mathlib.Data.String.Basic
 
 def concatMap {α β : Type}
     (f : α → List β)(xs : List α) : List β := List.flatMap f xs
@@ -12,98 +11,116 @@ def concatMap {α β : Type}
 def partition {α : Type} (f : α → Bool) (xs : List α) : (List α × List α) :=
   ⟨ xs.filter f, xs.filter (not ∘ f) ⟩
 
-structure RelEntry (α β : Type) : Type where
-  dom : α
-  rng : β
-  deriving Repr
+/-
+#print Decidable
 
-instance OrdRelEntry {α β : Type}[Ord α][Ord β] : Ord (RelEntry α β) where
-  compare x y :=
-  match compare x.dom y.dom with
-    | Ordering.lt => Ordering.lt
-    | Ordering.gt => Ordering.gt
-    | Ordering.eq => compare x.rng y.rng
+class Relatable α extends Ord α where
+  decEq : DecidableEq α
 
+instance { x: Relatable α } : DecidableEq α := x.decEq
 
-abbrev Rel (α β : Type)[Ord α][Ord β] : Type :=
-  Std.TreeSet (RelEntry α β)
+instance [Ord α][DecidableEq α] : Relatable α :=
+  by
+    constructor
+    assumption
+-/
 
-def emptyRel {α β : Type}[Ord α][Ord β] : Rel α β :=
-  Std.TreeSet.empty
+abbrev RelEntry α β := Lex (α × β)
 
-def listToRel {α β : Type} [Ord α] [Ord β]
-              (xs : List (RelEntry α β)) : Rel α β :=
-  Std.TreeSet.ofList xs
+namespace RelEntry
 
-def relToList {α β : Type} [Ord α] [Ord β]
-              (r : Rel α β) : List (RelEntry α β) :=
-  Std.TreeSet.toList r
+def mk (a : α) (b : β) : RelEntry α β := (a, b)
 
-def restrictDom {α β : Type} [Ord α] [Ord β]
-                (f : α → Bool) (r : Rel α β) : Rel α β :=
-  let g (x : RelEntry α β) : Bool := f x.dom
-  Std.TreeSet.filter g r
+end RelEntry
 
-def restrictRng {α β : Type} [Ord α] [Ord β]
-                (f : β → Bool) (r : Rel α β) : Rel α β :=
-  let g (x : RelEntry α β) : Bool := f x.rng
-  Std.TreeSet.filter g r
+abbrev FinRel (α β : Type) : Type :=
+  Finset (RelEntry α β)
 
-def restrictDomRng {α β: Type} [Ord α][Ord β]
-              (f : α → Bool)(g: β → Bool): Rel α β → Rel α β :=
+namespace Finset
+
+def fromList  [DecidableEq α] (xs : List α) : Finset α :=
+  List.toFinset xs
+
+def unionMap {α β : Type}[DecidableEq α][DecidableEq β]
+                (s : Finset α) (f : α → Finset β) : Finset β :=
+  s.fold Union.union ∅ f
+
+end Finset
+
+namespace FinRel
+
+def empty {α β : Type} : FinRel α β := ∅
+
+def fromList {α β : Type} [DecidableEq α][DecidableEq β]
+              (xs : List (RelEntry α β)) : FinRel α β :=
+  List.toFinset xs
+
+def restrictDom {α β : Type}
+                (f : α → Bool) (r : FinRel α β) : FinRel α β :=
+  let g (x : RelEntry α β) : Prop := f x.fst
+  Finset.filter g r
+
+def restrictRng {α β : Type}
+                (f : β → Bool) (r : FinRel α β) : FinRel α β :=
+  let g (x : RelEntry α β) : Prop := f x.snd
+  Finset.filter g r
+
+def restrictDomRng {α β: Type}
+              (f : α → Bool)(g: β → Bool): FinRel α β → FinRel α β :=
   restrictRng g ∘ restrictDom f
 
-def dom {α β : Type} [Ord α][Ord β] (r : Rel α β) : Set α :=
-  Std.TreeSet.ofList ((Std.TreeSet.toList r).map (λ x => x.dom))
+def dom {α β : Type} [DecidableEq α] (r : FinRel α β) : Finset α :=
+  Finset.image Prod.fst r
 
-def rng {α β : Type} [Ord α][Ord β] (r : Rel α β) : Set β :=
-  Std.TreeSet.ofList ((Std.TreeSet.toList r).map (λ x => x.rng))
+def rng {α β : Type} [DecidableEq β] (r : FinRel α β) : Finset β :=
+  Finset.image Prod.snd r
 
-def mapDom {α β γ : Type} [Ord α][Ord β][Ord γ]
-           (f : α → γ)(r : Rel α β) : Rel γ β :=
-  listToRel ((relToList r).map (λ ⟨x,y⟩ => ⟨f x, y⟩))
+def mapDom {α β γ : Type}[DecidableEq β][DecidableEq γ]
+           (f : α → γ)(r : FinRel α β) : FinRel γ β :=
+  Finset.image (Prod.map f id) r
 
-def mapRng {α β γ : Type} [Ord α][Ord β][Ord γ]
-           (f : β → γ)(r : Rel α β) : Rel α γ :=
-  listToRel ((relToList r).map (λ ⟨x,y⟩ => ⟨x, f y⟩))
+def mapRng {α β γ : Type}[DecidableEq α][DecidableEq γ]
+           (f : β → γ)(r : FinRel α β) : FinRel α γ :=
+  Finset.image (Prod.map id f) r
 
-def mapDomRng {α β γ δ : Type} [Ord α][Ord β][Ord γ][Ord δ]
-              (f : α → γ)(g: β → δ): Rel α β → Rel γ δ :=
-  mapRng g ∘ mapDom f
+def mapDomRng {α β γ δ : Type}[DecidableEq γ][DecidableEq δ]
+              (f : α → γ)(g: β → δ): FinRel α β → FinRel γ δ :=
+  Finset.image (Prod.map f g)
 
-def intersectRel {α β : Type}[Ord α][Ord β]
-                 (r₁ r₂ : Rel α β) : Rel α β :=
-  Inter.inter r₁ r₂
+def intersect {α β : Type}[DecidableEq α][DecidableEq β]
+                 (r₁ r₂ : FinRel α β) : FinRel α β :=
+  r₁ ∩ r₂
 
-def unionRels {α β : Type} [Ord α] [Ord β]
-              (xs : List (Rel α β)) : Rel α β :=
-  xs.foldl Std.TreeSet.union emptyRel
+def unions {α β : Type} [DecidableEq α][DecidableEq β]
+              (xs : List (FinRel α β)) : FinRel α β :=
+  xs.foldl Union.union ∅
 
-def minusRel {α β : Type} [Ord α][Ord β]
-             (r₁ r₂ : Rel α β) : Rel α β :=
-  SDiff.sdiff r₁ r₂
+def minus {α β : Type} [DecidableEq α][DecidableEq β]
+             (r₁ r₂ : FinRel α β) : FinRel α β :=
+  r₁ \ r₂
 
 def partitionDom {α β : Type} [Ord α] [Ord β]
-                 (f : α → Bool)(r : Rel α β) : (Rel α β × Rel α β) :=
+                 (f : α → Bool)(r : FinRel α β) : (FinRel α β × FinRel α β) :=
   ⟨restrictDom f r, restrictDom (not ∘ f) r⟩
 
-def applyRel {α β : Type} [BEq α][Ord α] [Ord β]
-             (r : Rel α β) (x : α) : List β :=
-  Std.TreeSet.toList (rng (restrictDom (λ y => BEq.beq y x) r))
+def apply {α β : Type} [DecidableEq α][DecidableEq β]
+             (r : FinRel α β) (x : α) : Finset β :=
+  rng $ restrictDom (λ y => x == y) $ r
 
-def unionMapSet {α β : Type}[Ord α][Ord β]
-                (f : α → Set β)(s : Set α) : Set β :=
-  let xs := Std.TreeSet.toList s
-  let ys := xs.map f
-  ys.foldl Std.TreeSet.union Std.TreeSet.empty
+end FinRel
 
-def example1 : Rel String String :=
-  listToRel [⟨"a", "b"⟩,⟨"c", "d"⟩,⟨"a", "x"⟩]
+def example1 : FinRel String String :=
+  { ⟨"a", "b"⟩,⟨"c", "d"⟩,⟨"a", "x"⟩ }
 
-def example2 : Rel String String :=
-  listToRel [⟨"a", "b"⟩,⟨"e", "f"⟩]
+def example2 : FinRel String String :=
+  Finset.fromList [⟨"a", "b"⟩,⟨"e", "f"⟩]
 
-#eval relToList (unionRels [example1, example2])
-#eval relToList (intersectRel example1 example2)
-#eval relToList (minusRel example1 example2)
-#eval applyRel example1 "a"
+#eval (FinRel.unions [example1, example2])
+#eval (FinRel.intersect example1 example2)
+#eval (FinRel.minus example1 example2)
+#eval FinRel.apply example1 "a"
+
+/- Or alternatively -/
+#eval (example1 ∪ example2)
+#eval (example1 ∩ example2)
+#eval (example1 \ example2)
